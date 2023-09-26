@@ -12,7 +12,7 @@ const BakerSchema = new Schema<BAKER>({
   isBaker: {
     type: Boolean,
     required: true,
-    default: false,
+    default: true,
   },
   street: {
     type: String,

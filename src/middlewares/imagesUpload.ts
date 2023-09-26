@@ -1,5 +1,8 @@
 import multer from 'multer';
 import cloudinary from 'cloudinary';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const cloudi = cloudinary.v2;
 cloudi.config({
