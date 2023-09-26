@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 import { NextFunction } from 'express';
+import { userControllers } from '../controllers/user';
 
 dotenv.config();
 
@@ -24,8 +25,39 @@ type TokenPayLoad = {
 const generateJWT = (payload: TokenPayLoad): String =>
   jwt.sign(payload, JWTSecret as string, { expiresIn: '7d' });
 
+const isBakerAuthorized = async (req: any, res: any, next: NextFunction) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized: Token not provided' });
+  }
+  if (req.user?.type !== 'Baker') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  try {
+    const payload: { id: string } = jwt.verify(token, JWTSecret as string) as {
+      id: string;
+    };
+    const userData = await userControllers.getUserById(payload.id);
+    if (!userData) {
+      return res.status(400);
+    }
+
+    req.user = {
+      id: userData.id,
+      email: userData.email,
+      type: userData.__t,
+    };
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  }
+};
+
 export const authMethods = {
   hashPassword,
   comparePassword,
   generateJWT,
+  isBakerAuthorized,
 };

@@ -5,7 +5,7 @@ interface PRODUCT extends Document {
   type: string;
   price: number;
   image: string;
-  bakingTime: number;
+  bakingTime: string;
 }
 
 const productSchema = new Schema<PRODUCT>(
@@ -21,7 +21,7 @@ const productSchema = new Schema<PRODUCT>(
       required: true,
     },
     bakingTime: {
-      type: Number,
+      type: String,
       required: true,
     },
   },

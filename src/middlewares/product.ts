@@ -9,8 +9,8 @@ const createProduct = async (req: any, res: Response, next: NextFunction) => {
   if (!type) {
     return res.status(404).json({ error: 'type not found' });
   }
-  if (type.length < 5) {
-    return res.status(404).json({ error: 'type should have 5 chars at least' });
+  if (type.length < 3) {
+    return res.status(404).json({ error: 'type should have 3 chars at least' });
   }
   if (!price) {
     return res.status(404).json({ error: 'Price not found' });
@@ -22,14 +22,15 @@ const createProduct = async (req: any, res: Response, next: NextFunction) => {
   let bakingTimes: number;
 
   if (typeof bakingTimeStr === 'string') {
-    const match = bakingTimeStr.match(/(\d+)(m|h|minutes|hours)/i);
-
+    const match = bakingTimeStr.match(
+      /(\d+)\s*(m|minute|minutes|h|hour|hours)\b/i
+    );
     if (match) {
       const quantity = Number(match[1]);
       const unit = match[2].toLowerCase();
-
+      console.log(unit);
       if (unit === 'm' || unit === 'minutes') {
-        bakingTimes = quantity >= 60 ? quantity / 60 : quantity / 60.0; // convert to hours
+        bakingTimes = quantity >= 60 ? quantity / 60 : quantity / 60.0;
       } else {
         bakingTimes = quantity;
       }
@@ -66,7 +67,7 @@ const createProduct = async (req: any, res: Response, next: NextFunction) => {
       type,
       image,
       price,
-      bakingTime,
+      bakingTime: bakingTimes.toString() + ' hours',
     });
 
     return res.status(201).json(product);
