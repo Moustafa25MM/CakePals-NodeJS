@@ -6,6 +6,13 @@ const create = (ownerID: string, data: any) => {
   return product;
 };
 
+const update = (productId: string, data: any) =>
+  models.Product.findByIdAndUpdate(productId, data);
+
+const getById = (productId: string) => models.Product.findById(productId);
+
 export const productControllers = {
   create,
+  update,
+  getById,
 };

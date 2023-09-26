@@ -12,4 +12,11 @@ router.post(
   productMiddlewares.createProduct
 );
 
+router.patch(
+  '/update/:productId',
+  productUpload.single('image'),
+  authMethods.isBakerAuthorized,
+  productMiddlewares.updateProduct
+);
+
 export const productRoutes: Router = router;

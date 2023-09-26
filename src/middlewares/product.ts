@@ -18,6 +18,9 @@ const createProduct = async (req: any, res: Response, next: NextFunction) => {
   if (price < 9) {
     return res.status(404).json({ error: 'price should be at least 9' });
   }
+  if (req.user?.type !== 'Baker') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const bakingTimeStr = req.body.bakingTime;
   let bakingTimes: number;
 
@@ -76,6 +79,79 @@ const createProduct = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
+const updateProduct = async (req: any, res: Response, next: NextFunction) => {
+  const ownerID = req.user.id;
+  const productId = req.params.productId;
+  const { type, price, bakingTime } = req.body;
+
+  if (req.user?.type !== 'Baker') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const bakingTimeStr = req.body.bakingTime;
+  let bakingTimes: number;
+
+  if (typeof bakingTimeStr === 'string') {
+    const match = bakingTimeStr.match(
+      /(\d+)\s*(m|minute|minutes|h|hour|hours)\b/i
+    );
+    if (match) {
+      const quantity = Number(match[1]);
+      const unit = match[2].toLowerCase();
+      console.log(unit);
+      if (unit === 'm' || unit === 'minutes') {
+        bakingTimes = quantity >= 60 ? quantity / 60 : quantity / 60.0;
+      } else {
+        bakingTimes = quantity;
+      }
+    } else {
+      return res.status(400).json({
+        error: 'Invalid baking time format. Use h, hours, m, or minutes.',
+      });
+    }
+  } else {
+    return res
+      .status(400)
+      .json({ error: 'Baking time not provided or not a string.' });
+  }
+  try {
+    let image = '';
+
+    if (req.file) {
+      const uploadedImg = req.file.path;
+      const images = await cloudi.uploader.upload(uploadedImg, {
+        public_id: `${productId}`,
+        width: 500,
+        height: 500,
+        crop: 'fill',
+      });
+      image = images.url;
+    } else {
+      const product = await productControllers.getById(productId);
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      if (product?.ownerID != ownerID) {
+        return res
+          .status(403)
+          .json({ error: 'Access denied. You do not own this product.' });
+      }
+      image = product.image;
+    }
+
+    const product = await productControllers.update(productId, {
+      type,
+      image,
+      price,
+      bakingTime: bakingTimes.toString() + ' hours',
+    });
+    const updatedProduct = await productControllers.getById(productId);
+    return res.status(200).json(updatedProduct);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 export const productMiddlewares = {
   createProduct,
+  updateProduct,
 };

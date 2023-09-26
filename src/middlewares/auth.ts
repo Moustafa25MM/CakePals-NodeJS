@@ -27,13 +27,10 @@ const generateJWT = (payload: TokenPayLoad): String =>
 
 const isBakerAuthorized = async (req: any, res: any, next: NextFunction) => {
   const token = req.headers.authorization;
-
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized: Token not provided' });
   }
-  if (req.user?.type !== 'Baker') {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
+
   try {
     const payload: { id: string } = jwt.verify(token, JWTSecret as string) as {
       id: string;
