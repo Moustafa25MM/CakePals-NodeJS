@@ -19,4 +19,10 @@ router.patch(
   productMiddlewares.updateProduct
 );
 
+router.delete(
+  '/delete/:productId',
+  authMethods.isBakerAuthorized,
+  productMiddlewares.removeProduct
+);
+
 export const productRoutes: Router = router;

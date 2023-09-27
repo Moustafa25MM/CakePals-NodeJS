@@ -11,8 +11,12 @@ const update = (productId: string, data: any) =>
 
 const getById = (productId: string) => models.Product.findById(productId);
 
+const remove = (productId: string) =>
+  models.Product.findByIdAndRemove(productId);
+
 export const productControllers = {
   create,
   update,
   getById,
+  remove,
 };

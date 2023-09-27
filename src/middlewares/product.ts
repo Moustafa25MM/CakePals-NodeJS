@@ -151,7 +151,35 @@ const updateProduct = async (req: any, res: Response, next: NextFunction) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+const removeProduct = async (req: any, res: Response) => {
+  const { productId } = req.params;
+  const ownerID = req.user.id;
+  try {
+    const user = await userControllers.getUserById(ownerID);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const product = await productControllers.getById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    if (product?.ownerID != ownerID) {
+      return res
+        .status(403)
+        .json({ error: 'Access denied. You do not own this product.' });
+    }
+    const result = await productControllers.remove(productId);
+
+    return res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 export const productMiddlewares = {
   createProduct,
   updateProduct,
+  removeProduct,
 };
