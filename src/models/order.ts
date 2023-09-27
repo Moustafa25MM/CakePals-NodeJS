@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 interface ORDER extends Document {
   memberID: Schema.Types.ObjectId;
   productID: Schema.Types.ObjectId;
+  bakingStartTime: Date;
   collectionTime: Date;
   paymentMethod: string;
   status: string;
@@ -18,6 +19,10 @@ const orderSchema = new Schema<ORDER>(
     productID: {
       type: Schema.Types.ObjectId,
       ref: 'Product',
+      required: true,
+    },
+    bakingStartTime: {
+      type: Date,
       required: true,
     },
     collectionTime: {
