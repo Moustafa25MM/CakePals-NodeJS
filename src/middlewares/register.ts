@@ -40,7 +40,18 @@ export const register = async (req: Request, res: Response) => {
       if (!data.street || !data.city || !data.country) {
         return res.status(400).json({ error: 'missing data' });
       }
-      const baker = new Baker(data);
+      const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(data.start) || !timeRegex.test(data.end)) {
+        return res
+          .status(400)
+          .json({ error: 'Start and end times must be in the format HH:mm' });
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const start = new Date(`${today}T${data.start}:00Z`);
+      const end = new Date(`${today}T${data.end}:00Z`);
+
+      const baker = new Baker({ ...data, collectionTimeRange: { start, end } });
       await baker.save();
 
       return res.status(201).json(baker);

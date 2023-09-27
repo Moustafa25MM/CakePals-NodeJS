@@ -6,6 +6,7 @@ interface BAKER extends Document {
   street: string;
   city: string;
   country: string;
+  collectionTimeRange: Date;
 }
 
 const BakerSchema = new Schema<BAKER>({
@@ -25,6 +26,16 @@ const BakerSchema = new Schema<BAKER>({
   country: {
     type: String,
     required: true,
+  },
+  collectionTimeRange: {
+    start: {
+      type: Date,
+      required: true,
+    },
+    end: {
+      type: Date,
+      required: true,
+    },
   },
 });
 
