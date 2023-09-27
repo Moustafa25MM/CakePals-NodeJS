@@ -3,6 +3,7 @@ import { userControllers } from '../controllers/user';
 import { productControllers } from '../controllers/product';
 import { cloudi } from './imagesUpload';
 import { bakingTimeFunc } from '../libs/bakingTime';
+import { Schema } from 'mongoose';
 
 const createProduct = async (req: any, res: Response, next: NextFunction) => {
   const ownerID = req.user.id;
@@ -141,8 +142,70 @@ const removeProduct = async (req: any, res: Response) => {
   }
 };
 
+type Owner = {
+  _id: Schema.Types.ObjectId;
+  street: string;
+  city: string;
+  country: string;
+};
+
+type Product = {
+  _id: Schema.Types.ObjectId;
+  type: string;
+  ownerID: Schema.Types.ObjectId;
+  price: number;
+  image: string;
+  bakingTime: string;
+};
+
+type ProductWithOwner = Product & {
+  ownerID: Owner;
+};
+
+const listProducts = async (req: Request, res: Response) => {
+  const { street, city, country, type, ...invalidParams } = req.query;
+
+  if (Object.keys(invalidParams).length > 0) {
+    return res.status(400).json({
+      error:
+        "Invalid query. Please filter by either 'type',''street ,'city' or 'country'.",
+    });
+  }
+
+  let products: ProductWithOwner[];
+
+  try {
+    products = (await productControllers.list(
+      {}
+    )) as unknown as ProductWithOwner[];
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (type) {
+    products = products.filter((product) => product.type === type);
+  }
+
+  if (street) {
+    products = products.filter((product) => product.ownerID.street === street);
+  }
+
+  if (city) {
+    products = products.filter((product) => product.ownerID.city === city);
+  }
+
+  if (country) {
+    products = products.filter(
+      (product) => product.ownerID.country === country
+    );
+  }
+
+  return res.status(200).json(products);
+};
+
 export const productMiddlewares = {
   createProduct,
   updateProduct,
   removeProduct,
+  listProducts,
 };

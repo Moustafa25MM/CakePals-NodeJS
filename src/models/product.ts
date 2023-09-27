@@ -12,6 +12,7 @@ const productSchema = new Schema<PRODUCT>(
   {
     ownerID: {
       type: Schema.Types.ObjectId,
+      ref: 'Baker',
       required: true,
     },
     type: { type: String, required: true },

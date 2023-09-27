@@ -14,9 +14,12 @@ const getById = (productId: string) => models.Product.findById(productId);
 const remove = (productId: string) =>
   models.Product.findByIdAndRemove(productId);
 
+const list = (filter: any) => models.Product.find(filter).populate('ownerID');
+
 export const productControllers = {
   create,
   update,
   getById,
   remove,
+  list,
 };

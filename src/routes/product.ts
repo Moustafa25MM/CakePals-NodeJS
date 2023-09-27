@@ -25,4 +25,6 @@ router.delete(
   productMiddlewares.removeProduct
 );
 
+router.get('/all', productMiddlewares.listProducts);
+
 export const productRoutes: Router = router;
