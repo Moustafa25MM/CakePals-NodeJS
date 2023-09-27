@@ -7,6 +7,7 @@ interface BAKER extends Document {
   city: string;
   country: string;
   collectionTimeRange: Date;
+  rating: number;
 }
 
 const BakerSchema = new Schema<BAKER>({
@@ -36,6 +37,10 @@ const BakerSchema = new Schema<BAKER>({
       type: Date,
       required: true,
     },
+  },
+  rating: {
+    type: Number,
+    default: 0,
   },
 });
 
