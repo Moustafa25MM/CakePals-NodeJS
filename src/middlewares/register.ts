@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { cloudi } from './imagesUpload';
 import { authMethods } from './auth';
 import { userControllers } from '../controllers/user';
-import { models } from 'mongoose';
 import { Member } from '../models/user/member';
 import { Baker } from '../models/user/baker';
 
