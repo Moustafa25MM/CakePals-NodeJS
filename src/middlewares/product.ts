@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { userControllers } from '../controllers/user';
 import { productControllers } from '../controllers/product';
 import { cloudi } from './imagesUpload';
+import { bakingTimeFunc } from '../libs/bakingTime';
 
 const createProduct = async (req: any, res: Response, next: NextFunction) => {
   const ownerID = req.user.id;
@@ -22,33 +23,14 @@ const createProduct = async (req: any, res: Response, next: NextFunction) => {
     return res.status(403).json({ error: 'Forbidden' });
   }
   const bakingTimeStr = req.body.bakingTime;
-  let bakingTimes: number;
-
-  if (typeof bakingTimeStr === 'string') {
-    const match = bakingTimeStr.match(
-      /(\d+)\s*(m|minute|minutes|h|hour|hours)\b/i
-    );
-    if (match) {
-      const quantity = Number(match[1]);
-      const unit = match[2].toLowerCase();
-      console.log(unit);
-      if (unit === 'm' || unit === 'minutes') {
-        bakingTimes = quantity >= 60 ? quantity / 60 : quantity / 60.0;
-      } else {
-        bakingTimes = quantity;
-      }
-    } else {
-      return res.status(400).json({
-        error: 'Invalid baking time format. Use h, hours, m, or minutes.',
-      });
-    }
-  } else {
-    return res
-      .status(400)
-      .json({ error: 'Baking time not provided or not a string.' });
-  }
 
   try {
+    let bakingTimePass;
+    try {
+      bakingTimePass = bakingTimeFunc(bakingTimeStr);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
     const user = await userControllers.getUserById(ownerID);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -70,7 +52,7 @@ const createProduct = async (req: any, res: Response, next: NextFunction) => {
       type,
       image,
       price,
-      bakingTime: bakingTimes.toString() + ' hours',
+      bakingTime: bakingTimePass.toString() + ' hours',
     });
 
     return res.status(201).json(product);
@@ -89,32 +71,13 @@ const updateProduct = async (req: any, res: Response, next: NextFunction) => {
   }
 
   const bakingTimeStr = req.body.bakingTime;
-  let bakingTimes: number;
-
-  if (typeof bakingTimeStr === 'string') {
-    const match = bakingTimeStr.match(
-      /(\d+)\s*(m|minute|minutes|h|hour|hours)\b/i
-    );
-    if (match) {
-      const quantity = Number(match[1]);
-      const unit = match[2].toLowerCase();
-      console.log(unit);
-      if (unit === 'm' || unit === 'minutes') {
-        bakingTimes = quantity >= 60 ? quantity / 60 : quantity / 60.0;
-      } else {
-        bakingTimes = quantity;
-      }
-    } else {
-      return res.status(400).json({
-        error: 'Invalid baking time format. Use h, hours, m, or minutes.',
-      });
-    }
-  } else {
-    return res
-      .status(400)
-      .json({ error: 'Baking time not provided or not a string.' });
-  }
   try {
+    let bakingTimePass;
+    try {
+      bakingTimePass = bakingTimeFunc(bakingTimeStr);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
     let image = '';
 
     if (req.file) {
@@ -143,7 +106,7 @@ const updateProduct = async (req: any, res: Response, next: NextFunction) => {
       type,
       image,
       price,
-      bakingTime: bakingTimes.toString() + ' hours',
+      bakingTime: bakingTimePass.toString() + ' hours',
     });
     const updatedProduct = await productControllers.getById(productId);
     return res.status(200).json(updatedProduct);

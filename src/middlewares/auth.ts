@@ -39,7 +39,6 @@ const isBakerAuthorized = async (req: any, res: any, next: NextFunction) => {
     if (!userData) {
       return res.status(400);
     }
-    console.log(userData);
     if (userData.__t !== 'Baker') {
       return res.status(403).json({ error: 'Forbidden: User is not a baker' });
     }
