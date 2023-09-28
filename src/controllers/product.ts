@@ -9,7 +9,7 @@ const create = (ownerID: string, data: any) => {
 const update = (productId: string, data: any) =>
   models.Product.findByIdAndUpdate(productId, data);
 
-const getById = (productId: string) => models.Product.findById(productId);
+const getById = (productId: any) => models.Product.findById(productId);
 
 const remove = (productId: string) =>
   models.Product.findByIdAndRemove(productId);

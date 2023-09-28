@@ -15,4 +15,11 @@ router.get(
   authMethods.isBakerAuthorized,
   orderMiddlewares.getBakerOrders
 );
+
+router.patch(
+  '/accept/:id',
+  authMethods.isBakerAuthorized,
+  orderMiddlewares.acceptOrder
+);
+
 export const orderRoutes: Router = router;
