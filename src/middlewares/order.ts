@@ -71,31 +71,18 @@ const placeOrder = async (req: any, res: Response, next: NextFunction) => {
       path: 'productID',
       match: { ownerID: baker._id },
     });
+    // ...
     if (overlappingOrder && overlappingOrder.productID) {
-      const lastOrderBeforeDesired = await models.Order.findOne({
-        productID: product._id,
-        status: 'accepted',
-        collectionTime: { $lt: desiredCollectionDate },
-      }).sort('-collectionTime');
-
-      if (!lastOrderBeforeDesired) {
-        return res.status(400).json({
-          error: 'There is an overlapping order',
-          nextAvailableDate: null,
-        });
-      }
-
       let bakingTimeHours = parseInt(product.bakingTime.split(' ')[0]);
       let nextAvailableDate = new Date(
-        new Date(lastOrderBeforeDesired.collectionTime).getTime() +
-          bakingTimeHours * 60 * 60 * 1000
+        new Date().getTime() + bakingTimeHours * 60 * 60 * 1000
       );
       let ifThereAvailableHours = nextAvailableDate
         .toISOString()
         .split(':')[0]
         .split('T')[1];
       let collectionHours = collectionTime.split(':')[0];
-      if (collectionHours < ifThereAvailableHours) {
+      if (collectionHours > ifThereAvailableHours) {
         return res.status(400).json({
           message: 'There is an overlapping order',
           FYI: 'there is no more today',
