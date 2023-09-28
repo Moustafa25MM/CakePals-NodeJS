@@ -66,19 +66,22 @@ const createProduct = async (req: any, res: Response, next: NextFunction) => {
 const updateProduct = async (req: any, res: Response, next: NextFunction) => {
   const ownerID = req.user.id;
   const productId = req.params.productId;
-  const { type, price, bakingTime } = req.body;
+  const { type, price, bakingTime: bakingTimeStr } = req.body;
 
   if (req.user?.type !== 'Baker') {
     return res.status(403).json({ error: 'Forbidden' });
   }
-  const bakingTimeStr = req.body.bakingTime;
+
   try {
     let bakingTimePass;
-    try {
-      bakingTimePass = bakingTimeFunc(bakingTimeStr);
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+    if (bakingTimeStr) {
+      try {
+        bakingTimePass = bakingTimeFunc(bakingTimeStr);
+      } catch (error: any) {
+        return res.status(400).json({ error: error.message });
+      }
     }
+
     let image = '';
 
     if (req.file) {
@@ -103,12 +106,12 @@ const updateProduct = async (req: any, res: Response, next: NextFunction) => {
       image = product.image;
     }
 
-    const product = await productControllers.update(productId, {
-      type,
-      image,
-      price,
-      bakingTime: bakingTimePass.toString() + ' hours',
-    });
+    const updateData: any = { type, image, price };
+    if (bakingTimePass) {
+      updateData.bakingTime = bakingTimePass.toString() + ' hours';
+    }
+
+    const product = await productControllers.update(productId, updateData);
     const updatedProduct = await productControllers.getById(productId);
     return res.status(200).json(updatedProduct);
   } catch (error: any) {
