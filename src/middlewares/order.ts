@@ -33,34 +33,67 @@ const placeOrder = async (req: any, res: Response, next: NextFunction) => {
     let bakerStartTime = new Date(baker.collectionTimeRange.start);
     let bakerEndTime = new Date(baker.collectionTimeRange.end);
 
+    let adjustedBakerStartTime = new Date(
+      bakerStartTime.getTime() + bakingTimeHours * 60 * 60 * 1000
+    );
     if (
       bakingStartTime < bakerStartTime ||
       desiredCollectionDate > bakerEndTime
     ) {
-      return res
-        .status(400)
-        .json({ error: 'Collection time outside baker availability' });
+      return res.status(400).json({
+        error: 'Collection time outside baker availability',
+        bakerAvailability: {
+          start: adjustedBakerStartTime.toISOString(),
+          end: bakerEndTime.toISOString(),
+        },
+      });
     }
+
     const overlappingOrder = await models.Order.findOne({
-      'productID.ownerID': baker._id,
+      productID: product._id,
       status: 'accepted',
       $or: [
         {
           bakingStartTime: {
-            $lt: desiredCollectionDate,
-            $gt: bakingStartTime,
+            $lte: desiredCollectionDate,
+            $gte: bakingStartTime,
           },
         },
         {
           collectionTime: {
-            $lt: desiredCollectionDate,
+            $lte: desiredCollectionDate,
             $gt: bakingStartTime,
           },
         },
       ],
+    }).populate({
+      path: 'productID',
+      match: { ownerID: baker._id },
     });
-    if (overlappingOrder) {
-      return res.status(400).json({ error: 'There is an overlapping order' });
+    if (overlappingOrder && overlappingOrder.productID) {
+      const lastOrderBeforeDesired = await models.Order.findOne({
+        productID: product._id,
+        status: 'accepted',
+        collectionTime: { $lt: desiredCollectionDate },
+      }).sort('-collectionTime');
+
+      if (!lastOrderBeforeDesired) {
+        return res.status(400).json({
+          error: 'There is an overlapping order',
+          nextAvailableDate: null,
+        });
+      }
+
+      let bakingTimeHours = parseInt(product.bakingTime.split(' ')[0]);
+      let nextAvailableDate = new Date(
+        new Date(lastOrderBeforeDesired.collectionTime).getTime() +
+          bakingTimeHours * 60 * 60 * 1000
+      );
+
+      return res.status(400).json({
+        error: 'There is an overlapping order',
+        nextAvailableDate: nextAvailableDate.toISOString(),
+      });
     }
     const orderData = {
       memberID,
