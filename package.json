@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && npx tsc",
+    "build": "rimraf dist && tsc",
     "prestart": "npm run build",
     "start": "node dist/index.js",
     "predev": "npm run build",
@@ -12,7 +12,7 @@
     "jasmine": "jasmine",
     "test": "npm run build && npm run jasmine"
   },
-  "author": "",
+  "author": "Moustafa Mahmoud",
   "license": "ISC",
   "dependencies": {
     "@types/bcrypt": "^5.0.0",
