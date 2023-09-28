@@ -151,3 +151,51 @@ describe('GET /baker/:id', () => {
     expect(res.body.error).toBe('Baker not found');
   });
 });
+
+describe('GET /baker/all', () => {
+  const bakerData1 = {
+    type: 'baker',
+    firstName: 'Jane',
+    lastName: 'Doe',
+    email: 'janedoe2@example.com',
+    password: 'password123',
+    phoneNumber: '0987654321',
+    street: '123 Baker St',
+    city: 'Bakerville',
+    country: 'Bakerland',
+    start: '08:00',
+    end: '18:00',
+  };
+  const bakerData2 = {
+    type: 'baker',
+    firstName: 'Jane',
+    lastName: 'Doe',
+    email: 'janedoe3@example.com',
+    password: 'password123',
+    phoneNumber: '0987654321',
+    street: '123 Baker St',
+    city: 'Bakerville',
+    country: 'Bakerland',
+    start: '08:00',
+    end: '18:00',
+  };
+
+  beforeEach(async () => {
+    await request(app).post('/register').send(bakerData1);
+    await request(app).post('/register').send(bakerData2);
+  });
+
+  it('should get all bakers', async () => {
+    const res = await request(app).get('/baker/all');
+
+    expect(res.status).toBe(200);
+  });
+
+  it('should get paginated bakers', async () => {
+    const res = await request(app)
+      .get('/baker/all')
+      .query({ pageSize: 1, pageNumber: 2 });
+
+    expect(res.status).toBe(200);
+  });
+});
