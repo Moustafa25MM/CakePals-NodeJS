@@ -54,9 +54,39 @@ const isBakerAuthorized = async (req: any, res: any, next: NextFunction) => {
   }
 };
 
+const isMemberAuthorized = async (req: any, res: any, next: NextFunction) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized: Token not provided' });
+  }
+
+  try {
+    const payload: { id: string } = jwt.verify(token, JWTSecret as string) as {
+      id: string;
+    };
+    const userData = await userControllers.getUserById(payload.id);
+    if (!userData) {
+      return res.status(400);
+    }
+    if (userData.__t !== 'Member') {
+      return res.status(403).json({ error: 'Forbidden: not a member' });
+    }
+    req.user = {
+      id: userData.id,
+      email: userData.email,
+      type: userData.__t,
+    };
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  }
+};
+
 export const authMethods = {
   hashPassword,
   comparePassword,
   generateJWT,
   isBakerAuthorized,
+  isMemberAuthorized,
 };

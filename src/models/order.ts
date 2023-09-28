@@ -23,7 +23,6 @@ const orderSchema = new Schema<ORDER>(
     },
     bakingStartTime: {
       type: Date,
-      required: true,
     },
     collectionTime: {
       type: Date,

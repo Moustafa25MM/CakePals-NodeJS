@@ -4,6 +4,9 @@ import { authMethods } from './auth';
 import { userControllers } from '../controllers/user';
 import { Member } from '../models/user/member';
 import { Baker } from '../models/user/baker';
+import { DateTime, Settings } from 'luxon';
+
+Settings.defaultZone = 'Africa/Cairo';
 
 export const register = async (req: Request, res: Response) => {
   const data = req.body;
@@ -46,11 +49,26 @@ export const register = async (req: Request, res: Response) => {
           .json({ error: 'Start and end times must be in the format HH:mm' });
       }
 
-      const today = new Date().toISOString().split('T')[0];
-      const start = new Date(`${today}T${data.start}:00Z`);
-      const end = new Date(`${today}T${data.end}:00Z`);
+      const [startHours, startMinutes] = data.start.split(':').map(Number);
+      const [endHours, endMinutes] = data.end.split(':').map(Number);
 
-      const baker = new Baker({ ...data, collectionTimeRange: { start, end } });
+      const start = DateTime.local().set({
+        hour: startHours + 2,
+        minute: startMinutes,
+        second: 0,
+        millisecond: 0,
+      });
+      const end = DateTime.local().set({
+        hour: endHours + 2,
+        minute: endMinutes,
+        second: 0,
+        millisecond: 0,
+      });
+
+      const baker = new Baker({
+        ...data,
+        collectionTimeRange: { start: start.toJSDate(), end: end.toJSDate() },
+      });
       await baker.save();
 
       return res.status(201).json(baker);
