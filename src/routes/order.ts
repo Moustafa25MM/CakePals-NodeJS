@@ -10,4 +10,9 @@ router.post(
   orderMiddlewares.placeOrder
 );
 
+router.get(
+  '/baker-orders',
+  authMethods.isBakerAuthorized,
+  orderMiddlewares.getBakerOrders
+);
 export const orderRoutes: Router = router;
