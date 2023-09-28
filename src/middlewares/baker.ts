@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { cloudi } from './imagesUpload';
 import { authMethods } from './auth';
 import { userControllers } from '../controllers/user';
+import { paginationOption } from '../libs/paginations';
 
 const getBakerById = async (req: Request, res: Response) => {
   try {
@@ -18,7 +19,27 @@ const getBakerById = async (req: Request, res: Response) => {
 const getAllBakers = async (req: Request, res: Response) => {
   try {
     const bakers = await userControllers.getAllBakers();
-    return res.status(200).json(bakers);
+    let pageSize = req.query.pageSize
+      ? parseInt(req.query.pageSize as string)
+      : 5;
+    pageSize = Math.min(20, pageSize);
+    const totalDocs = bakers.length;
+    const maxPageNumber = Math.ceil(totalDocs / pageSize);
+
+    let pageNumber = req.query.pageNumber
+      ? parseInt(req.query.pageNumber as string)
+      : 1;
+    pageNumber = Math.min(Math.max(pageNumber, 1), maxPageNumber);
+    const paginatedBakers = bakers.slice(
+      (pageNumber - 1) * pageSize,
+      pageNumber * pageSize
+    );
+
+    const paginationOptions = paginationOption(pageSize, pageNumber, totalDocs);
+    return res.status(200).json({
+      paginations: paginationOptions,
+      bakers: paginatedBakers,
+    });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
