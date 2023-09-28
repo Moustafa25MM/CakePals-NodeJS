@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { ratingControllers } from '../controllers/rating';
 import { orderControllers } from '../controllers/order';
 import { productControllers } from '../controllers/product';
+import { userControllers } from '../controllers/user';
 
 const createRating = async (req: any, res: Response, next: NextFunction) => {
   const memberId = req.user.id;
@@ -53,6 +54,10 @@ const getRatingsByBaker = async (req: Request, res: Response) => {
 
   const totalRate = ratings.reduce((sum, rating) => sum + rating.rate, 0);
   const avgRate = totalRate / ratings.length;
+
+  const baker = await userControllers.getBakerById(bakerId);
+  baker.rating = avgRate;
+  await baker.save();
 
   return res.status(200).json({ ratings: result, avgRate });
 };
