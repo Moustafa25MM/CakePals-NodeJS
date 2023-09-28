@@ -89,7 +89,17 @@ const placeOrder = async (req: any, res: Response, next: NextFunction) => {
         new Date(lastOrderBeforeDesired.collectionTime).getTime() +
           bakingTimeHours * 60 * 60 * 1000
       );
-
+      let ifThereAvailableHours = nextAvailableDate
+        .toISOString()
+        .split(':')[0]
+        .split('T')[1];
+      let collectionHours = collectionTime.split(':')[0];
+      if (collectionHours < ifThereAvailableHours) {
+        return res.status(400).json({
+          message: 'There is an overlapping order',
+          FYI: 'there is no more today',
+        });
+      }
       return res.status(400).json({
         error: 'There is an overlapping order',
         nextAvailableDate: nextAvailableDate.toISOString(),
