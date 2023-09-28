@@ -28,4 +28,10 @@ router.patch(
   orderMiddlewares.rejectOrder
 );
 
+router.patch(
+  '/fulfil/:id',
+  authMethods.isBakerAuthorized,
+  orderMiddlewares.fulfillOrder
+);
+
 export const orderRoutes: Router = router;
