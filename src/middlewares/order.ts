@@ -3,6 +3,7 @@ import { orderControllers } from '../controllers/order';
 import { productControllers } from '../controllers/product';
 import { userControllers } from '../controllers/user';
 import { models } from '../models';
+import { paginationOption } from '../libs/paginations';
 
 const placeOrder = async (req: any, res: Response, next: NextFunction) => {
   const memberID = req.user.id;
@@ -162,7 +163,27 @@ const getBakerOrders = async (req: any, res: Response, next: NextFunction) => {
     if (!orders) {
       return res.status(404).json({ error: 'No orders found' });
     }
-    return res.status(200).json(orders);
+    let pageSize = req.query.pageSize
+      ? parseInt(req.query.pageSize as string)
+      : 5;
+    pageSize = Math.min(20, pageSize);
+    const totalDocs = orders.length;
+    const maxPageNumber = Math.ceil(totalDocs / pageSize);
+
+    let pageNumber = req.query.pageNumber
+      ? parseInt(req.query.pageNumber as string)
+      : 1;
+    pageNumber = Math.min(Math.max(pageNumber, 1), maxPageNumber);
+    const paginatedOrders = orders.slice(
+      (pageNumber - 1) * pageSize,
+      pageNumber * pageSize
+    );
+
+    const paginationOptions = paginationOption(pageSize, pageNumber, totalDocs);
+    return res.status(200).json({
+      paginations: paginationOptions,
+      orders: paginatedOrders,
+    });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
