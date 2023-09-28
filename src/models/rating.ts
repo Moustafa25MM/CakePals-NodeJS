@@ -4,7 +4,7 @@ interface RATING extends Document {
   bakerID: Schema.Types.ObjectId;
   memberID: Schema.Types.ObjectId;
   orderID: Schema.Types.ObjectId;
-  rating: number;
+  rate: number;
   comment: string;
 }
 
@@ -25,7 +25,7 @@ const ratingSchema = new Schema<RATING>(
       ref: 'Order',
       required: true,
     },
-    rating: {
+    rate: {
       type: Number,
       min: 1,
       max: 5,
