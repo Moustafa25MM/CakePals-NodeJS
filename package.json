@@ -9,7 +9,8 @@
     "start": "node dist/index.js",
     "predev": "npm run build",
     "dev": "concurrently \"npx tsc -w\"  \" nodemon dist/index.js\" ",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "jasmine": "jasmine",
+    "test": "npm run build && npm run jasmine"
   },
   "author": "",
   "license": "ISC",
