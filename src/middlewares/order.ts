@@ -118,6 +118,19 @@ const getBakerOrders = async (req: any, res: Response, next: NextFunction) => {
   const bakerID = req.user.id;
   const { status } = req.query;
 
+  const validStatuses = ['pending', 'accepted', 'rejected', 'fulfilled'];
+
+  if (status && !validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status value' });
+  }
+
+  const queryKeys = Object.keys(req.query);
+  if (
+    queryKeys.length > 1 ||
+    (queryKeys.length === 1 && !queryKeys.includes('status'))
+  ) {
+    return res.status(400).json({ error: 'Invalid query parameters' });
+  }
   try {
     const products = await models.Product.find({
       ownerID: bakerID,
@@ -160,6 +173,32 @@ const acceptOrder = async (req: any, res: Response, next: NextFunction) => {
     const product = await productControllers.getById(productId);
     if (bakerID !== String(product?.ownerID)) {
       return res.status(400).json({ error: 'order is not yours to accept' });
+    }
+
+    const overlappingOrder = await models.Order.findOne({
+      productID: product?._id,
+      status: 'accepted',
+      $or: [
+        {
+          bakingStartTime: {
+            $lte: order.collectionTime,
+            $gte: order.bakingStartTime,
+          },
+        },
+        {
+          collectionTime: {
+            $lte: order.collectionTime,
+            $gt: order.bakingStartTime,
+          },
+        },
+      ],
+    }).populate({
+      path: 'productID',
+      match: { ownerID: bakerID },
+    });
+
+    if (overlappingOrder && overlappingOrder.productID) {
+      return res.status(400).json({ error: 'There is an overlapping order' });
     }
     const updatedOrder = await orderControllers.updateStatus(
       orderId,
