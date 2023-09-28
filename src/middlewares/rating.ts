@@ -3,6 +3,7 @@ import { ratingControllers } from '../controllers/rating';
 import { orderControllers } from '../controllers/order';
 import { productControllers } from '../controllers/product';
 import { userControllers } from '../controllers/user';
+import { paginationOption } from '../libs/paginations';
 
 const createRating = async (req: any, res: Response, next: NextFunction) => {
   const memberId = req.user.id;
@@ -59,7 +60,28 @@ const getRatingsByBaker = async (req: Request, res: Response) => {
   baker.rating = avgRate;
   await baker.save();
 
-  return res.status(200).json({ ratings: result, avgRate });
+  let pageSize = req.query.pageSize
+    ? parseInt(req.query.pageSize as string)
+    : 5;
+  pageSize = Math.min(20, pageSize);
+  const totalDocs = result.length;
+  const maxPageNumber = Math.ceil(totalDocs / pageSize);
+
+  let pageNumber = req.query.pageNumber
+    ? parseInt(req.query.pageNumber as string)
+    : 1;
+  pageNumber = Math.min(Math.max(pageNumber, 1), maxPageNumber);
+  const paginatedRatings = result.slice(
+    (pageNumber - 1) * pageSize,
+    pageNumber * pageSize
+  );
+
+  const paginationOptions = paginationOption(pageSize, pageNumber, totalDocs);
+  return res.status(200).json({
+    avgRate,
+    pagination: paginationOptions,
+    ratings: paginatedRatings,
+  });
 };
 
 export const ratingMiddlewares = {
