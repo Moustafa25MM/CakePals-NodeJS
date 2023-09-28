@@ -4,6 +4,7 @@ import { productControllers } from '../controllers/product';
 import { cloudi } from './imagesUpload';
 import { bakingTimeFunc } from '../libs/bakingTime';
 import { Schema } from 'mongoose';
+import { paginationOption } from '../libs/paginations';
 
 const createProduct = async (req: any, res: Response, next: NextFunction) => {
   const ownerID = req.user.id;
@@ -199,8 +200,28 @@ const listProducts = async (req: Request, res: Response) => {
       (product) => product.ownerID.country === country
     );
   }
+  let pageSize = req.query.pageSize
+    ? parseInt(req.query.pageSize as string)
+    : 5;
+  pageSize = Math.min(20, pageSize);
+  const totalDocs = products.length;
+  const maxPageNumber = Math.ceil(totalDocs / pageSize);
 
-  return res.status(200).json(products);
+  let pageNumber = req.query.pageNumber
+    ? parseInt(req.query.pageNumber as string)
+    : 1;
+  pageNumber = Math.min(Math.max(pageNumber, 1), maxPageNumber);
+  const paginatedProducts = products.slice(
+    (pageNumber - 1) * pageSize,
+    pageNumber * pageSize
+  );
+
+  const paginationOptions = paginationOption(pageSize, pageNumber, totalDocs);
+
+  return res.status(200).json({
+    pagination: paginationOptions,
+    products: paginatedProducts,
+  });
 };
 
 export const productMiddlewares = {
