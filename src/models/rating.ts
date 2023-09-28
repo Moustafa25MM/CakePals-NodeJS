@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 interface RATING extends Document {
   bakerID: Schema.Types.ObjectId;
   memberID: Schema.Types.ObjectId;
+  orderID: Schema.Types.ObjectId;
   rating: number;
   comment: string;
 }
@@ -17,6 +18,11 @@ const ratingSchema = new Schema<RATING>(
     memberID: {
       type: Schema.Types.ObjectId,
       ref: 'Member',
+      required: true,
+    },
+    orderID: {
+      type: Schema.Types.ObjectId,
+      ref: 'Order',
       required: true,
     },
     rating: {
