@@ -9,7 +9,7 @@ dotenv.config();
 
 export const app: Express = express();
 app.use(express.json());
-// app.use(morgan('dev'));
+app.use(morgan('dev'));
 
 app.use(indexRouter);
 app.use(errorHandler);

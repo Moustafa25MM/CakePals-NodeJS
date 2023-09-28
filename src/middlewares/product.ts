@@ -71,7 +71,6 @@ const updateProduct = async (req: any, res: Response, next: NextFunction) => {
   if (req.user?.type !== 'Baker') {
     return res.status(403).json({ error: 'Forbidden' });
   }
-
   const bakingTimeStr = req.body.bakingTime;
   try {
     let bakingTimePass;

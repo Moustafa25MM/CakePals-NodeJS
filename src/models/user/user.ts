@@ -42,7 +42,14 @@ const userSchema: Schema = new Schema<USER>(
     phoneNumber: {
       type: String,
       required: true,
-      maxlength: 12,
+      unique: true,
+      validate: {
+        validator: function (v: any) {
+          return /^\d{11}$/.test(v);
+        },
+        message: (props) => `${props.value} is not a valid phone number!`,
+      },
+      maxlength: 11,
     },
   },
   {

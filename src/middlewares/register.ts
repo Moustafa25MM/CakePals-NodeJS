@@ -10,9 +10,16 @@ Settings.defaultZone = 'Africa/Cairo';
 
 export const register = async (req: Request, res: Response) => {
   const data = req.body;
-  let { password } = req.body;
-  if (password === undefined) {
-    return res.status(500);
+  let { password, email, phoneNumber, firstName, lastName } = data;
+
+  if (!password || !email || !phoneNumber || !firstName || !lastName) {
+    return res.status(400).json({ error: 'Missing necessary data' });
+  }
+
+  if (phoneNumber.length !== 11) {
+    return res
+      .status(400)
+      .json({ error: 'Phone Number should be exactly 11 digits' });
   }
   if (!(data.type === 'member' || data.type === 'baker')) {
     return res.status(402).json({ error: 'Choose Between Member Or Baker' });
@@ -22,6 +29,12 @@ export const register = async (req: Request, res: Response) => {
     const existingUser = await userControllers.getUserByEmail(data.email);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already exists' });
+    }
+    const existingPhoneNumber = await userControllers.getuserByPhoneNumber(
+      data.phoneNumber
+    );
+    if (existingPhoneNumber) {
+      return res.status(400).json({ error: 'Phone Number already exists' });
     }
     let profilePicture = '';
     if (req.file) {
