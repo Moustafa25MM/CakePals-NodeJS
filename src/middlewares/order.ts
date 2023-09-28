@@ -215,8 +215,41 @@ const acceptOrder = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
+const rejectOrder = async (req: any, res: Response, next: NextFunction) => {
+  const bakerID = req.user.id;
+
+  try {
+    const orderId = req.params.id;
+    if (!orderId) {
+      return res.status(400).json({ error: 'Invalid order id' });
+    }
+    const order = await orderControllers.getById(orderId);
+    if (!order) {
+      return res.status(400).json({ error: 'order is not found' });
+    }
+    const productId = order.productID;
+    const product = await productControllers.getById(productId);
+    if (bakerID !== String(product?.ownerID)) {
+      return res.status(400).json({ error: 'order is not yours to reject' });
+    }
+    const updatedOrder = await orderControllers.updateStatus(
+      orderId,
+      'rejected'
+    );
+    if (!updatedOrder) {
+      return res
+        .status(400)
+        .json({ error: 'Order not found or update failed' });
+    }
+    return res.status(200).json(updatedOrder);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 export const orderMiddlewares = {
   placeOrder,
   getBakerOrders,
   acceptOrder,
+  rejectOrder,
 };

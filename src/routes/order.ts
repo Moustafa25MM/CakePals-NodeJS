@@ -22,4 +22,10 @@ router.patch(
   orderMiddlewares.acceptOrder
 );
 
+router.patch(
+  '/reject/:id',
+  authMethods.isBakerAuthorized,
+  orderMiddlewares.rejectOrder
+);
+
 export const orderRoutes: Router = router;
