@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 import { orderControllers } from '../controllers/order';
 import { productControllers } from '../controllers/product';
 import { userControllers } from '../controllers/user';
-import mongoose from 'mongoose';
 import { models } from '../models';
 
 const placeOrder = async (req: any, res: Response, next: NextFunction) => {
@@ -87,7 +86,6 @@ const getBakerOrders = async (req: any, res: Response, next: NextFunction) => {
   const { status } = req.query;
 
   try {
-    // First find all products that belong to the baker
     const products = await models.Product.find({
       ownerID: bakerID,
     });
@@ -95,13 +93,11 @@ const getBakerOrders = async (req: any, res: Response, next: NextFunction) => {
 
     let orders;
     if (status) {
-      // Then find all orders that belong to the baker's products and match the status
       orders = await models.Order.find({
         productID: { $in: productIds },
         status,
       });
     } else {
-      // Or find all orders that belong to the baker's products
       orders = await models.Order.find({
         productID: { $in: productIds },
       });
