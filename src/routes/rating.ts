@@ -10,4 +10,6 @@ router.post(
   ratingMiddlewares.createRating
 );
 
+router.get('/baker/:bakerId', ratingMiddlewares.getRatingsByBaker);
+
 export const ratingRoutes: Router = router;

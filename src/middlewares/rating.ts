@@ -35,6 +35,29 @@ const createRating = async (req: any, res: Response, next: NextFunction) => {
   return res.status(201).json(rating);
 };
 
+const getRatingsByBaker = async (req: Request, res: Response) => {
+  const { bakerId } = req.params;
+
+  const ratings = await ratingControllers.getRatingsByBaker(bakerId);
+  if (!ratings) {
+    return res.status(404).json({ error: 'No ratings found for this baker' });
+  }
+
+  const result = ratings.map((rating) => {
+    return {
+      memberId: rating.memberID,
+      rate: rating.rate,
+      comment: rating.comment,
+    };
+  });
+
+  const totalRate = ratings.reduce((sum, rating) => sum + rating.rate, 0);
+  const avgRate = totalRate / ratings.length;
+
+  return res.status(200).json({ ratings: result, avgRate });
+};
+
 export const ratingMiddlewares = {
   createRating,
+  getRatingsByBaker,
 };
